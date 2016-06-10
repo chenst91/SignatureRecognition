@@ -19,28 +19,39 @@
 using namespace std;
 using namespace cv;
 
-const int HAMMING_THRESHOLD = 5;	// 汉明距离阈值
-const int FILE_NUMBER = 10;			// 每组取10张作为样本
+// 汉明距离阈值
+// i use hamming length as measurement
+const int HAMMING_THRESHOLD = 5;	
+
+// 每组取10张作为样本
+// file number of each group
+const int FILE_NUMBER = 10;			
 
 // 将矩形分割成两个三角形计算面积
+// divide the retangle into two triangle to calculate its area 
 double CalcArea(Point2f a, Point2f b, Point2f c, Point2f d);
 
 // 利用海伦公式计算三角形面积
+// calculate a triangle's area with Heron formula
 double Heron(Point2f a, Point2f b, Point2f c);
 
 // 平方
 double pow(double x);
 
 // 计算特征向量,输入两张图像,计算匹配点数量,平均匹配距离,匹配面积
+// extract ORB feature and calculate some parameters
 void CalcFeature(const Mat sampleImg, const Mat testImg, int &matchCount, double &lengthAverage, double &area);
 
 // 获取图像集
+// get all the image name from a list
 void GetImgPath(string filePath, string imgList, vector<string> &imgPath, int fileNumber);
 
 // 计算图像和样本集的匹配结果
+// calculate the result
 void CalcMatch(const Mat testImg, vector<string> &imgPath, double &averArea, int &count, double &percent, double &showPercent);
 
 // 根据可信度确定签名分类
+// classify the signature due to its reliability
 void Predict(const double a, const double b, const double c, const double d, const double e,
 	const double showA, const double showB, const double showC, const double showD, const double showE);
 
@@ -137,14 +148,15 @@ void CalcMatch(Mat testImg, vector<string> &imgPath, double &averArea, int &coun
 		//cout << "  area:" << area << endl;
 
 		// 认为有效匹配范围是1W2 ~ 4W
-		if (area >= 10000 && area <= 50000)
+		// set area range, here i choose 50% ~ 200% of the data image area
+		if (area >= 10000 && area <= 40000)
 			count++;
 
 		// 大于4W认为是错误匹配
-		if (area > 50000)
+		if (area > 40000)
 			errorCount++;
 
-		if (area <= 50000)
+		if (area <= 40000)
 			areaSum += area;
 	}
 
@@ -220,6 +232,7 @@ void CalcFeature(const Mat sampleImg, const Mat testImg, int &matchCount, double
 	double lengthSum = 0;
 
 	// 保存匹配距离在阈值范围内的特征点
+	// define if each feature point effective or not with haming_threshold
 	for (size_t i = 0; i < points1.size(); i++)
 	{
 		int length = norm(points2[i] - points1t.at<Point2f>((int)i, 0));
